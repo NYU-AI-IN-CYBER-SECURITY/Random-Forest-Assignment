@@ -185,14 +185,6 @@ Hold out a local validation split (e.g. `train_test_split`, stratified on `attac
 
 ---
 
-## Where This Goes Next
-
-Keep your rule-based metrics next to your random forest metrics: the comparison is the actual learning objective of running these two assignments back to back. Wherever the forest gains the most ground on your hand-written rules, that is overlap your features could resolve but your four-rule, hand-tuned boundary set could not reach. Wherever the forest still struggles (typically the rarer attack categories like `Worms` or `Backdoor` in the multi-class task), that is closer to the genuine ceiling: classes with few training examples and features that legitimately overlap with other categories, which no amount of additional tree capacity fully resolves.
-
-Later in the course, when anomaly-detection and deep-learning methods come up, the same question will come back a third time: does the new method lift the ceiling you found here, or run into it in a different shape?
-
----
-
 ## Submission
 
 Upload to the Gradescope assignment:
