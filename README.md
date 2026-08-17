@@ -35,6 +35,7 @@ That said, **you are expected to tune**. A model left entirely at its defaults w
 
 **A high score is very achievable.** You are scored on your raw metric values, similar to the previous assignment. Benchmark thoroughly on your own machine, then spend a submission when you have something worth testing.
 
+**TIP: Read everything before getting started!**
 ---
 
 ## Why This Is a Very Real Exercise
@@ -215,6 +216,7 @@ One naming quirk to save you a confusing five minutes: the package installs as `
 - [Metrics and scoring](https://scikit-learn.org/stable/modules/model_evaluation.html) and [`classification_report`](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html). Understand what `average='macro'` does before you tune anything.
 - [Model persistence](https://scikit-learn.org/stable/model_persistence.html) and [joblib](https://joblib.readthedocs.io/en/stable/persistence.html).
 - New to pandas? [10 minutes to pandas](https://pandas.pydata.org/docs/user_guide/10min.html).
+- Depending on your dataset, the SMOTE imbalance-learn library may be useful (as well as others), uses scikit-learn! [Imbalanced Learn](https://imbalanced-learn.org/stable/index.html)
 
 **If you prefer video.** Watch enough to understand how a forest works and how to drive one. Do not disappear into a machine learning curriculum; that is not what this assignment is testing, don't overwhelm yourself!
 
@@ -284,13 +286,13 @@ Enforced automatically. Violations score **0**.
 | `dict` with exactly `binaryModel` and `multiclassModel` | Extra, missing, or misspelled keys |
 | A single `.joblib` from `joblib.dump(...)` | A `.py` file, a notebook, a zip, or a folder |
 | `binaryModel` on `label`, `multiclassModel` on `attack_cat` | `label` in the multi-class features, or `attack_cat` in the binary features |
-| Final file under 150 MB | Leaving `max_depth` unbounded |
+| Final file under 30 MB | Leaving `max_depth` unbounded |
 
 Everything about *how you get there* is unconstrained. Explore, plot, use a notebook, run a search if you want to. The constraints apply to the artifact you submit, not to your process.
 
 ### Model size
 
-Your finished `randomForestModel.joblib` is expected to come in **under 150 MB**, and the autograder checks this.
+Your finished `randomForestModel.joblib` is expected to come in **under 30 MB**, and the autograder checks this.
 
 The reason a file can blow past that is worth understanding. One-hot encoding `proto` turns one column into 100+, and an unbounded tree keeps splitting until every leaf is pure, so each of your trees can end up with tens of thousands of nodes. Multiply by `n_estimators` and by two models in one file, and several hundred MB is easy to reach by accident.
 
@@ -304,7 +306,7 @@ How you get under the limit is your decision, which part of the exercise. `max_d
 
 **Failing any of these scores a 0**, with an explanation printed:
 
-- **Size check**: the file must be under 150 MB.
+- **Size check**: the file must be under 30 MB.
 - **Artifact check**: it must load and be a `dict` with `binaryModel` and `multiclassModel`, each exposing a callable `.predict()`.
 - **Model type check**: the final estimator of each pipeline must be a `RandomForestClassifier`. A better-performing gradient booster still fails this check, because this assignment is specifically about random forests.
 
@@ -368,7 +370,7 @@ Each submission before the deadline banks a fresh tier, so getting a working art
 - Wrong or misspelled dictionary keys.
 - Any estimator other than `RandomForestClassifier` as the final step.
 - Using `label` or `attack_cat` as an input feature.
-- A file over 150 MB.
+- A file over 30 MB.
 
 **These quietly cost you points instead:**
 
