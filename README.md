@@ -184,7 +184,9 @@ These overlap more than the descriptions suggest. `Exploits`, `Backdoor` and `Sh
 
 ## Your Task
 
-You write your own training script. There is no starter file this week. Call it `trainRandomForest.py` or anything else you like, keep it locally, and do not submit it. The only thing graded is the `.joblib` artifact it produces.
+You do your own training work in a **Jupyter notebook**. There is no starter file this week.
+
+That notebook is a **required deliverable**: you will submit it to Gradescope alongside your token, named `<netid>_rf.ipynb`. It is **not graded** — your score comes entirely from the `.joblib` artifact the portal evaluates — but a Gradescope submission without a correctly named notebook is rejected outright. See [Submission](#submission) for the naming rule and upload steps.
 
 ### The requirement that trips everyone up
 
@@ -284,11 +286,12 @@ Enforced automatically. Violations score **0**.
 | Final pipeline step is `RandomForestClassifier` | Any other final estimator (`GradientBoostingClassifier`, `LogisticRegression`, `XGBClassifier`) |
 | Categorical encoding handled inside the pipeline | Relying on the autograder to pre-encode (it will not) |
 | `dict` with exactly `binaryModel` and `multiclassModel` | Extra, missing, or misspelled keys |
-| A single `.joblib` from `joblib.dump(...)` | A `.py` file, a notebook, a zip, or a folder |
+| A single `.joblib` from `joblib.dump(...)` uploaded to the **portal** | A `.py` file, a notebook, a zip, or a folder in place of the `.joblib` |
 | `binaryModel` on `label`, `multiclassModel` on `attack_cat` | `label` in the multi-class features, or `attack_cat` in the binary features |
 | Final file under 30 MB | Leaving `max_depth` unbounded |
+| `token.txt` **and** `<netid>_rf.ipynb` uploaded to **Gradescope** | A missing, misnamed, or empty notebook |
 
-Everything about *how you get there* is unconstrained. Explore, plot, use a notebook, run a search if you want to. The constraints apply to the artifact you submit, not to your process.
+Everything about *how you get there* is otherwise unconstrained. Explore, plot, run a search if you want to. The constraints apply to what you submit, not to how you arrive at it — with the one exception that the work has to live in a notebook you hand in.
 
 ### Model size
 
@@ -309,6 +312,10 @@ How you get under the limit is your decision, which part of the exercise. `max_d
 - **Size check**: the file must be under 30 MB.
 - **Artifact check**: it must load and be a `dict` with `binaryModel` and `multiclassModel`, each exposing a callable `.predict()`.
 - **Model type check**: the final estimator of each pipeline must be a `RandomForestClassifier`. A better-performing gradient booster still fails this check, because this assignment is specifically about random forests.
+
+On the Gradescope side, one more check runs **before** your score is fetched:
+
+- **Notebook check**: your submission must contain a notebook named exactly `<netid>_rf.ipynb`, and it must be a real notebook (valid `.ipynb` JSON with at least one cell). Its *contents* are never inspected or graded. This check runs first, so a perfect model still reports **0** if the notebook is missing or misnamed — the fix is to re-upload with the right filename, not to retrain anything.
 
 ### Step 2: Metrics
 
@@ -365,7 +372,8 @@ Each submission before the deadline banks a fresh tier, so getting a working art
 
 **These score 0:**
 
-- Submitting a `.py`, a notebook, a zip, or a folder instead of the single `.joblib`.
+- Uploading a `.py`, a notebook, a zip, or a folder to the portal instead of the single `.joblib`.
+- Forgetting `<netid>_rf.ipynb` on Gradescope, or naming it something else (`Untitled.ipynb`, `assignment2.ipynb`, `rf.ipynb`, `<netid>rf.ipynb`). The notebook is not graded, but leaving it out is.
 - Submitting a bare `RandomForestClassifier` instead of a pipeline, or one-hot encoding outside the pipeline. Same underlying error, and the most common failure on this assignment.
 - Wrong or misspelled dictionary keys.
 - Any estimator other than `RandomForestClassifier` as the final step.
@@ -421,6 +429,7 @@ See here: [`feature_importances_`](https://scikit-learn.org/stable/auto_examples
 4. Save, verify with the reload snippet, and **submit once early**, even if the model is barely tuned. A working artifact on the board is worth a great deal: it confirms your pipeline survives the autograder and banks you a bonus tier.
 5. Do the real work locally. Attack the multi-class metrics, find the classes with zero (or poor) recall, and change one parameter at a time so you can attribute each result. Test against data from outside your training file.
 6. Refit your best configuration on your whole data set (if you can), save, verify, and submit again. Keep an eye on how many attempts you have left.
+7. Rename your working notebook to `<netid>_rf.ipynb` and upload it to Gradescope with your `token.txt`.
 
 ---
 
@@ -434,8 +443,45 @@ What is new this assignment: a model can be accurate and useless at once, and wh
 
 ## Submission
 
-Submit through the course portal:
+Submitting takes **two steps, in two different places**. Do both — step 1 produces your score, step 2 is what delivers it to Gradescope.
 
-1. **`randomForestModel.joblib`**, produced by `joblib.dump(...)`. The file itself, not a zip, not a notebook, and not your training script.
+### Step 1 — Upload your model to the course portal
+
+Upload **`randomForestModel.joblib`**, produced by `joblib.dump(...)`. The file itself: not a zip, not a notebook, not your training script.
+
+The portal runs the checks and computes your metrics, then shows a **`token.txt`** on your submission's results page. Download it.
+
+### Step 2 — Upload to Gradescope
+
+Upload **both** of these files together:
+
+| File | What it is | Graded? |
+|---|---|---|
+| `token.txt` | The token from your portal results page. This is what carries your score across. | This *is* your score |
+| `<netid>_rf.ipynb` | The Jupyter notebook you trained your random forest in. | **No** — but required |
+
+Miss either one and the submission is rejected with a **0** and an explanation.
+
+### Naming your notebook
+
+Your notebook must be named **`<netid>_rf.ipynb`**, where `<netid>` is your own NYU netid — the part of your NYU email address *before* the `@`.
+
+| If your NYU email is | Your notebook must be named |
+|---|---|
+| `abc1234@nyu.edu` | `abc1234_rf.ipynb` |
+| `jd42@nyu.edu` | `jd42_rf.ipynb` |
+| `xy9876@nyu.edu` | `xy9876_rf.ipynb` |
+
+The autograder works out the expected filename from **your own Gradescope account**, so the name is unique to you and there is no list to look up — just use your netid. A classmate's notebook will not pass under their name, and yours will not pass under theirs.
+
+What is enforced, precisely:
+
+- The filename must match `<netid>_rf.ipynb`. Capitalisation is forgiven (`ABC1234_RF.ipynb` is accepted), nothing else is — no spaces, no `-rf`, no `_RF_final(2)`.
+- It must be a genuine notebook: valid `.ipynb` JSON containing at least one cell. Renaming a `.py` or an empty file to `.ipynb` will not pass.
+- It may sit inside a folder in your upload; the autograder will find it.
+
+What is **not** enforced: anything about the contents. Nobody's score depends on what is in the notebook, and it is not run, re-executed, or checked against your artifact. Submit the notebook you actually worked in — exploration, dead ends, plots and all. It is there so your process is on record, not to be marked.
+
+> **Note the order of operations.** The notebook is checked *before* your score is retrieved. A flawless model with a misnamed notebook reports 0 — and the fix is a rename and a re-upload, not a retrain. Check the filename before you submit.
 
 Autograder results are returned within Gradescope. **Your number of submissions is limited**, and the output tells you how many you have used; read it carefully. Each submission before the deadline banks a fresh early-submission bonus tier, so submit early, but do your experimenting locally rather than against the autograder.
