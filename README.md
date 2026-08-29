@@ -47,7 +47,7 @@ That said, **you are expected to tune**. A model left entirely at its defaults w
 
 **If you have never used scikit-learn**, budget an hour before you write anything. Read [Getting Started](https://scikit-learn.org/stable/getting_started.html) and then [Pipelines and composite estimators](https://scikit-learn.org/stable/modules/compose.html). The full set of resources, including video, is in "Tools, and where to learn them" below.
 
-**There is no starter code, and that is deliberate.** The single most common way to score 0 on this assignment is to do your encoding outside the model you submit. A skeleton with the pipeline already wired would make that mistake impossible, and it would also delete the thing you are here to learn: that a trained model is the fitted trees *plus* the transformations that produced its inputs. Assembling that yourself is the exercise. The structure you are aiming for is described plainly in "Your Task", and the linked worked example builds the same shape on a different dataset.
+**There is no starter code, and that is deliberate.** The single most common way to score 0 on this assignment is to do your encoding outside the model you submit. **There is no starter code, and that is deliberate.** The single most common way to score 0 on this assignment is to do your encoding outside the model you submit. A skeleton with the pipeline already wired would be counter-productive, and it would also delete the thing you are here to learn: that a trained model is the fitted trees *plus* the transformations that produced its inputs. Assembling that yourself is the exercise. The structure you are aiming for is described plainly in "Your Task", and the linked worked example builds the same shape on a different dataset. The structure you are aiming for is described in "Your Task", and the linked worked example builds the same shape on a different dataset.
 
 ---
 
@@ -138,11 +138,12 @@ Closing the gap is yours to solve, but three places to look: `class_weight` on t
 Created by the Australian Centre for Cyber Security at UNSW, mixing real packet captures with synthetic attack traffic from the IXIA PerfectStorm tool.
 
 **Official dataset page:** https://research.unsw.edu.au/projects/unsw-nb15-dataset
+**We created an additional download repository of just the CSV files (for convenience):** https://nyu.box.com/s/ahob3ibcszm9i7n9a2jh84sag0dzuuar
 
 **Citation:**
 > Moustafa, N., & Slay, J. (2015). UNSW-NB15: a comprehensive data set for network intrusion detection systems. *2015 MilCIS*, IEEE. [DOI](https://doi.org/10.1109/MilCIS.2015.7348942)
 
-### Your Training File
+### Example Training File
 
 **`UNSW_NB15_balanced_30k.csv`**, the same 30,000-record subset you used for the rule-based assignment:
 
@@ -152,15 +153,15 @@ Created by the Australian Centre for Cyber Security at UNSW, mixing real packet 
 | Attack (`label = 1`) | 15,000 |
 | **Total** | **30,000** |
 
-This file is balanced on `label` and badly imbalanced on `attack_cat`. **That is deliberate.** It is a realistic sample of network traffic and a poor multi-class training set at the same time, and noticing that, then deciding what to do about it, is part of the assignment rather than a defect to work around. Run `value_counts()` and see how bad it is for yourself before you decide anything. Nothing stops you from building a better training set out of the full public dataset, and you are encouraged to.
+This file is balanced on `label` and badly imbalanced on `attack_cat`. **That is deliberate.** It is a realistic sample of network traffic and a poor multi-class training set at the same time, and noticing that, then deciding what to do about it, is part of the assignment rather than a defect to work around. Run `value_counts()` and see how bad it is for yourself before you decide anything (using it or not). Nothing stops you from building a better training set out of the full public dataset, and you are encouraged to.
 
-> **On the test set:** the autograder evaluates against a separate, unseen set that is held back from what is publicly downloadable. Building your own evaluation sets from the full UNSW-NB15 will not overlap with it. It may not be balanced on either column, and you do not get to look at it. All we promise is that it is the same *type* of network activity. That is the real-world condition and it is worth sitting with: you prepare with what you have, for what you expect, with no guarantee the two match. A model tuned to the exact composition of your local file is a model betting that they do match, but we all know that this is almost never the case!
+> **On the test set:** the autograder evaluates against a separate, unseen set that is held back from what is publicly downloadable. Building your own evaluation sets from the full UNSW-NB15 will not overlap with it. It may not be balanced on either column, and you do not get to look at it. All we promise is that it is the same *type* of network activity. That is the real-world condition: you prepare with what you have, for what you expect, with no guarantee the two match. A model tuned to the exact composition of your local file is a model betting that they do match, but we all know that this is almost never the case!
 
 ### Columns
 
 Every column except `label`, `attack_cat`, and `id` is a feature.
 
-`id` is the record number from the original UNSW-NB15 dataset. It is carried in this CSV purely so you can trace these 30,000 rows back to where they were pulled from. It says nothing about the traffic, it is not a feature, and it must not be fed to your model. The autograder passes your pipeline the 42 features only, so keep your training inputs shaped the same way.
+`id` is the record number from the original UNSW-NB15 dataset. It is carried in this example training CSV purely so you can trace these 30,000 rows back to where they were pulled from. It says nothing about the traffic, it is not a feature, and it should not be fed to your model. The autograder passes your pipeline the 42 features only, so keep your training inputs shaped the same way.
 
 Three of the 42 features hold text rather than numbers:
 
@@ -178,7 +179,7 @@ You do not have to implement that yourself. You do have to make sure it happens,
 
 The remaining 39 features are the numeric ones from the rule-based assignment (`dur`, `spkts`, `dpkts`, `sbytes`, `dbytes`, `rate`, `sttl`, `dttl`, `sload`, `dload`, `sloss`, `dloss`, `sinpkt`, `dinpkt`, `sjit`, `djit`, `swin`, `dwin`, `smean`, `dmean`, `trans_depth`, `response_body_len`, the ten `ct_*` counters, `is_ftp_login`, `ct_ftp_cmd`, `ct_flw_http_mthd`, `is_sm_ips_ports`).
 
-**Never use `label` or `attack_cat` as an input feature.** They are the answer keys, banned exactly as they were from your rule conditions, and the autograder checks for this the same way it did there. That includes the cross-case: no `label` in the multi-class features, no `attack_cat` in the binary features. Build your feature set programmatically (everything except those three columns, `id` included) rather than typing out a list, so it cannot drift out of sync with what the autograder passes you.
+**Never use `label` or `attack_cat` as an input feature.** They are the answer keys, banned exactly as they were from your rule conditions, and the autograder checks for this the same way it did there. That includes the cross-case: no `label` in the multi-class features, no `attack_cat` in the binary features. Build your feature set programmatically (features only) rather than typing out a list, so it cannot drift out of sync with what the autograder passes you.
 
 ### Attack Categories
 
@@ -201,7 +202,7 @@ These overlap more than the descriptions suggest. `Exploits`, `Backdoor` and `Sh
 
 ## Your Task
 
-You write your own training code, in whichever form you prefer: a **Jupyter notebook** or a plain **Python script**. There is no starter file this week, for the reason given under "Before You Start".
+You write your own training code, in whichever form you prefer: a **Jupyter notebook** or a plain **Python script**. There is no starter file this week. Remember our reason from "Before You Start"!
 
 That file is a **required deliverable**: you will submit it to Gradescope alongside your token, named `<netid>_rf.ipynb` or `<netid>_rf.py`. It is **not graded**, since your score comes entirely from the `.joblib` artifact the portal evaluates, but a Gradescope submission without a correctly named training file is rejected. See [Submission](#submission) for the naming rule and upload steps.
 
@@ -209,9 +210,9 @@ That file is a **required deliverable**: you will submit it to Gradescope alongs
 
 The autograder calls `.predict()` on a raw `pandas.DataFrame` containing the 42 feature columns, text values and all. **It does no encoding for you.**
 
-That means the encoding has to travel *inside* the object you submit. If you one-hot encode in your training script and then save only the classifier, the autograder will hand your model the string `"tcp"` where it expects a number, and it will crash. This is the single most common way to score 0 on this assignment.
+That means the encoding has to travel *inside* the object you submit. If you one-hot encode in your training script and then save only the classifier, the autograder will hand your model the string `"tcp"` where it expects a number, and it will crash or missbehave. This is the single most common way to score 0 on this assignment.
 
-Understand why rather than just complying, because the principle generalises well beyond this course. A trained model is not only the fitted trees. It is the trees **plus every transformation applied to the data before fitting**, and those transformations carry state: which categories existed, in what order, mapped to which column positions. A model shipped without that state is not reproducible by anyone but you, and it will silently produce garbage the moment someone encodes their data in a slightly different order. Bundling the preprocessing and the classifier into one object makes the artifact self-contained. That is standard production practice, and it is what is being enforced here.
+Understand why rather than just complying, because the principle generalises well beyond this course. A repeat from before, a trained model is not only the fitted trees. It is the trees **plus every transformation applied to the data before fitting**, and those transformations carry state: which categories existed, in what order, mapped to which column positions. A model shipped without that state is not reproducible by anyone but you, and it will silently produce garbage the moment someone encodes their data in a slightly different order. Bundling the preprocessing and the classifier into one object makes the artifact self-contained. That is standard production practice, and it is what is being enforced here.
 
 **The structure you need**, stated plainly: a single fitted object that holds both the encoder and the classifier, so that calling `.predict()` on raw text-and-numbers data runs the encoding and the forest in one step. In scikit-learn, the pieces that do this are `OneHotEncoder` (turns the three text columns into numbers), `ColumnTransformer` (applies that encoding to those three columns and passes the 39 numeric ones through untouched), and `Pipeline` (chains the transformer and the `RandomForestClassifier` into one saveable object). Build one such pipeline for `label` and a second for `attack_cat`. How you wire them together is yours to work out, and the [mixed types worked example](https://scikit-learn.org/stable/auto_examples/compose/plot_column_transformer_mixed_types.html) linked below builds this exact shape on a different dataset.
 
@@ -288,7 +289,7 @@ If `predict(raw)` raises an exception, your encoding is not inside your pipeline
 
 ### Refit on everything before you submit
 
-Your validation split exists so you can measure honestly. Once you have settled on hyperparameters, refit both pipelines on your data. Those held-back rows are free signal, and they matter most for the rare classes, where you may only have a few dozen examples to begin with.
+Your validation split exists so you can measure honestly. Once you have settled on hyperparameters, you can consider refitting both pipelines on your data. Those held-back rows are free signal, and they may matter most for the rare classes, where you may only have a few dozen examples to begin with.
 
 ---
 
@@ -312,9 +313,9 @@ Everything about *how you get there* is otherwise unconstrained. Explore, plot, 
 
 Your finished `randomForestModel.joblib` is expected to come in **under 30 MB**, and the autograder checks this.
 
-The reason a file can blow past that is worth understanding. One-hot encoding `proto` turns one column into 100+, and an unbounded tree keeps splitting until every leaf is pure, so each of your trees can end up with tens of thousands of nodes. Multiply by `n_estimators` and by two models in one file, and several hundred MB is easy to reach by accident.
+The reason a file can blow past that is important to understand. One-hot encoding `proto` turns one column into 100+, and an unbounded tree keeps splitting until every leaf is pure, so each of your trees can end up with tens of thousands of nodes. Multiply by `n_estimators` and by two models in one file, and several hundred MB is easy to reach by accident.
 
-How you get under the limit is your decision, which part of the exercise. `max_depth` is the most direct lever, but `n_estimators`, `max_leaf_nodes`, `min_samples_leaf`, and `max_features` all change the size of the resulting artifact, and they change your metrics differently from one another. There are others to look at too! Experiment, watch both the file size and the eight metrics, and form a view about the trade-off. On this dataset, sensible caps cost very little accuracy. You won't get brownie points for getting a smaller file size, just get under the file size cap we list, and then simply work on getting the highest performance possible.
+How you get under the limit is your decision, which is part of the exercise! `max_depth` is the most direct lever, but `n_estimators`, `max_leaf_nodes`, `min_samples_leaf`, and `max_features` all change the size of the resulting artifact, and they change your metrics differently from one another. There are others to look at too! Experiment, watch both the file size and the eight metrics, and form a view about the trade-off. On this dataset, sensible caps cost very little accuracy. You won't get brownie points for getting a smaller file size, just get under the file size cap we list, and then simply work on getting the highest performance possible.
 
 ---
 
@@ -419,7 +420,7 @@ At minimum: hold out a validation split (stratified on `attack_cat`), and print 
 
 A few things worth testing while you are there, since the hidden set is not guaranteed to look like your training file:
 
-- How do your metrics move on a sample that is **not** balanced 50/50 on `label`?
+- How do your metrics move on a sample that is **not** balanced 50/50 and one that **is** balanced on `label`?
 - How do they move on a sample with a different mix of attack categories?
 - Do the rare classes your model learned to predict still get predicted when they appear at a different frequency?
 
@@ -496,7 +497,7 @@ Both formats are accepted and neither is preferred. Submit a notebook if you wor
 | `jd42@nyu.edu` | `jd42_rf.ipynb` or `jd42_rf.py` |
 | `xy9876@nyu.edu` | `xy9876_rf.ipynb` or `xy9876_rf.py` |
 
-The autograder works out the expected filename from **your own Gradescope account**, so the name is unique to you and there is no list to look up. Just use your netid. A classmate's file will not pass under their name, and yours will not pass under theirs.
+Not your vanity alias on nyu.edu but your actual netid! The autograder works out the expected filename from **your own Gradescope account**, so the name is unique to you and there is no list to look up. Just use your netid. A classmate's file will not pass under your name, and yours will not pass under theirs (besides the serious academic integrity issue that will ensue). 
 
 What is enforced, precisely:
 
