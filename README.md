@@ -21,7 +21,7 @@ Read this part carefully, because it changes how you should spend your time.
 
 This is **not** a machine learning course, and this is not an assignment about producing a hyper-optimised model. Your work is measured, and you will get a real score back. But the goal is not to squeeze out the last two points of F1, and if you find yourself building an eight-hour grid search, you have misread the assignment.
 
-Note also that submissions are made through the course portal and may be **limited in number**, so the autograder is not your development loop. Do your iterating locally, where attempts are free, and spend your submissions on configurations you already have reason to believe in. See "Testing Locally" for how to build a validation setup worth trusting.
+Note also that submissions are made through the course portal and are **limited in number**. The portal shows you how many attempts you have and how many you have used, so check it before you plan your week. You have enough to work with, but the autograder is not your development loop. Do your iterating locally, where attempts are free, and spend your submissions on configurations you already have reason to believe in. See "Testing Locally" for how to build a validation setup worth trusting.
 
 What you are being asked to understand is **where a model like this one fits in**. You are working through a progression: hand-written rules last week, a learned model this week, and AI systems later in the course. Each layer is a different tool for the same underlying job, but perhaps different aspects of it (network detection), and each has a shape of problem it suits and a shape it does not. So as you work, keep three questions open:
 
@@ -36,6 +36,19 @@ That said, **you are expected to tune**. A model left entirely at its defaults w
 **A high score is very achievable.** You are scored on your raw metric values, similar to the previous assignment. Benchmark thoroughly on your own machine, then spend a submission when you have something worth testing.
 
 **TIP: Read everything before getting started!**
+
+---
+
+## Before You Start
+
+**Install from the `requirements.txt` in this repository**, not the latest of everything. The autograder runs pinned versions, and a scikit-learn version mismatch is one of the few failures you cannot diagnose from your own machine. More on this under "Environment versions".
+
+**One naming quirk, to save you a confusing five minutes:** the package installs as `scikit-learn` and imports as `sklearn`.
+
+**If you have never used scikit-learn**, budget an hour before you write anything. Read [Getting Started](https://scikit-learn.org/stable/getting_started.html) and then [Pipelines and composite estimators](https://scikit-learn.org/stable/modules/compose.html). The full set of resources, including video, is in "Tools, and where to learn them" below.
+
+**There is no starter code, and that is deliberate.** The single most common way to score 0 on this assignment is to do your encoding outside the model you submit. A skeleton with the pipeline already wired would make that mistake impossible, and it would also delete the thing you are here to learn: that a trained model is the fitted trees *plus* the transformations that produced its inputs. Assembling that yourself is the exercise. The structure you are aiming for is described plainly in "Your Task", and the linked worked example builds the same shape on a different dataset.
+
 ---
 
 ## Why This Is a Very Real Exercise
@@ -139,13 +152,17 @@ Created by the Australian Centre for Cyber Security at UNSW, mixing real packet 
 | Attack (`label = 1`) | 15,000 |
 | **Total** | **30,000** |
 
-Balanced on `label`. Not necessarily balanced on `attack_cat`, which is something you should confirm for yourself rather than take on faith. Remember again, maybe this is not a great dataset as is to use, perhaps pull more data yourself...
+This file is balanced on `label` and badly imbalanced on `attack_cat`. **That is deliberate.** It is a realistic sample of network traffic and a poor multi-class training set at the same time, and noticing that, then deciding what to do about it, is part of the assignment rather than a defect to work around. Run `value_counts()` and see how bad it is for yourself before you decide anything. Nothing stops you from building a better training set out of the full public dataset, and you are encouraged to.
 
-> **On the test set:** the autograder evaluates against a separate, unseen set. It may not be balanced on either column, and you do not get to look at it. All we promise is that it is the same *type* of network activity. That is the real-world condition and it is worth sitting with: you prepare with what you have, for what you expect, with no guarantee the two match. A model tuned to the exact composition of your local file is a model betting that they do match, but we all know that this is almost never the case!
+> **On the test set:** the autograder evaluates against a separate, unseen set that is held back from what is publicly downloadable. Building your own evaluation sets from the full UNSW-NB15 will not overlap with it. It may not be balanced on either column, and you do not get to look at it. All we promise is that it is the same *type* of network activity. That is the real-world condition and it is worth sitting with: you prepare with what you have, for what you expect, with no guarantee the two match. A model tuned to the exact composition of your local file is a model betting that they do match, but we all know that this is almost never the case!
 
 ### Columns
 
-Keep in mind, every column except `label` and `attack_cat` is a feature. Three of them hold text rather than numbers:
+Every column except `label`, `attack_cat`, and `id` is a feature.
+
+`id` is the record number from the original UNSW-NB15 dataset. It is carried in this CSV purely so you can trace these 30,000 rows back to where they were pulled from. It says nothing about the traffic, it is not a feature, and it must not be fed to your model. The autograder passes your pipeline the 42 features only, so keep your training inputs shaped the same way.
+
+Three of the 42 features hold text rather than numbers:
 
 | Column | Notes |
 |---|---|
@@ -161,7 +178,7 @@ You do not have to implement that yourself. You do have to make sure it happens,
 
 The remaining 39 features are the numeric ones from the rule-based assignment (`dur`, `spkts`, `dpkts`, `sbytes`, `dbytes`, `rate`, `sttl`, `dttl`, `sload`, `dload`, `sloss`, `dloss`, `sinpkt`, `dinpkt`, `sjit`, `djit`, `swin`, `dwin`, `smean`, `dmean`, `trans_depth`, `response_body_len`, the ten `ct_*` counters, `is_ftp_login`, `ct_ftp_cmd`, `ct_flw_http_mthd`, `is_sm_ips_ports`).
 
-**Never use `label` or `attack_cat` as an input feature.** They are the answer keys, banned exactly as they were from your rule conditions, and the autograder checks for this the same way it did there. That includes the cross-case: no `label` in the multi-class features, no `attack_cat` in the binary features. Build your feature set programmatically (everything except those two columns) rather than typing out a list, so it cannot drift out of sync with what the autograder passes you.
+**Never use `label` or `attack_cat` as an input feature.** They are the answer keys, banned exactly as they were from your rule conditions, and the autograder checks for this the same way it did there. That includes the cross-case: no `label` in the multi-class features, no `attack_cat` in the binary features. Build your feature set programmatically (everything except those three columns, `id` included) rather than typing out a list, so it cannot drift out of sync with what the autograder passes you.
 
 ### Attack Categories
 
@@ -184,9 +201,9 @@ These overlap more than the descriptions suggest. `Exploits`, `Backdoor` and `Sh
 
 ## Your Task
 
-You write your own training code, in whichever form you prefer: a **Jupyter notebook** or a plain **Python script**. There is no starter file this week.
+You write your own training code, in whichever form you prefer: a **Jupyter notebook** or a plain **Python script**. There is no starter file this week, for the reason given under "Before You Start".
 
-That file is a **required deliverable**: you will submit it to Gradescope alongside your token, named `<netid>_rf.ipynb` or `<netid>_rf.py`. It is **not graded** — your score comes entirely from the `.joblib` artifact the portal evaluates — but a Gradescope submission without a correctly named training file is rejected outright. See [Submission](#submission) for the naming rule and upload steps.
+That file is a **required deliverable**: you will submit it to Gradescope alongside your token, named `<netid>_rf.ipynb` or `<netid>_rf.py`. It is **not graded**, since your score comes entirely from the `.joblib` artifact the portal evaluates, but a Gradescope submission without a correctly named training file is rejected. See [Submission](#submission) for the naming rule and upload steps.
 
 ### The requirement that trips everyone up
 
@@ -196,13 +213,11 @@ That means the encoding has to travel *inside* the object you submit. If you one
 
 Understand why rather than just complying, because the principle generalises well beyond this course. A trained model is not only the fitted trees. It is the trees **plus every transformation applied to the data before fitting**, and those transformations carry state: which categories existed, in what order, mapped to which column positions. A model shipped without that state is not reproducible by anyone but you, and it will silently produce garbage the moment someone encodes their data in a slightly different order. Bundling the preprocessing and the classifier into one object makes the artifact self-contained. That is standard production practice, and it is what is being enforced here.
 
-What you may want to build, in shape: a preprocessing step that one-hot encodes `proto`, `service` and `state` and passes the numeric columns through untouched, feeding a `RandomForestClassifier`, with the whole thing wrapped in a single object that can be saved and reloaded. In scikit-learn those pieces are called `OneHotEncoder`, `ColumnTransformer`, and `Pipeline`. Fit one such pipeline on `label` and a second on `attack_cat`.
+**The structure you need**, stated plainly: a single fitted object that holds both the encoder and the classifier, so that calling `.predict()` on raw text-and-numbers data runs the encoding and the forest in one step. In scikit-learn, the pieces that do this are `OneHotEncoder` (turns the three text columns into numbers), `ColumnTransformer` (applies that encoding to those three columns and passes the 39 numeric ones through untouched), and `Pipeline` (chains the transformer and the `RandomForestClassifier` into one saveable object). Build one such pipeline for `label` and a second for `attack_cat`. How you wire them together is yours to work out, and the [mixed types worked example](https://scikit-learn.org/stable/auto_examples/compose/plot_column_transformer_mixed_types.html) linked below builds this exact shape on a different dataset.
 
 ### Tools, and where to learn them
 
 **scikit-learn** (usually written `sklearn`) is one of the standard open-source machine learning libraries for Python. It provides the classifier, the preprocessing steps, the pipeline container, and the metric functions this assignment refers to. If you have not taken a prior machine learning course, you may never have used it, you will need to take some time to get familiar. Everything you need is in the first two links below.
-
-One naming quirk to save you a confusing five minutes: the package installs as `scikit-learn` but imports as `sklearn`.
 
 **Start here:**
 
@@ -233,7 +248,7 @@ One naming quirk to save you a confusing five minutes: the package installs as `
 
 The autograder runs the versions of Python, scikit-learn, pandas, and everything else pinned in the **`requirements.txt` in this repository**. Install from that file rather than pulling the latest of everything.
 
-Models saved by one version of scikit-learn are not guaranteed to load correctly in another. A version mismatch can produce a warning, a hard failure to load, or, worst of all, an artifact that loads and predicts incorrectly. If your submission fails a check that your local verification passed, a version mismatch is the first thing to check, again look at 'requirements.txt'.
+Models saved by one version of scikit-learn are not guaranteed to load correctly in another. A version mismatch can produce a warning, a hard failure to load, or, worst of all, an artifact that loads and predicts incorrectly. If your submission fails a check that your local verification passed, a version mismatch is the first thing to check, again look at `requirements.txt`.
 
 ### Saving your submission
 
@@ -263,7 +278,7 @@ print(type(models['binaryModel'].steps[-1][1]))
 print(type(models['multiclassModel'].steps[-1][1]))
 
 df = pd.read_csv('UNSW_NB15_balanced_30k.csv')
-raw = df.drop(columns=['label', 'attack_cat']).head(5)   # raw, unencoded
+raw = df.drop(columns=['id', 'label', 'attack_cat']).head(5)   # raw, unencoded, 42 features
 
 print(models['binaryModel'].predict(raw))       # expect 0s and 1s
 print(models['multiclassModel'].predict(raw))   # expect category strings
@@ -291,7 +306,7 @@ Enforced automatically. Violations score **0**.
 | Final file under 30 MB | Leaving `max_depth` unbounded |
 | `token.txt` **and** `<netid>_rf.ipynb` *or* `<netid>_rf.py` uploaded to **Gradescope** | A missing, misnamed, or empty training file |
 
-Everything about *how you get there* is otherwise unconstrained. Explore, plot, run a search if you want to. The constraints apply to what you submit, not to how you arrive at it — with the one exception that the work has to live in a notebook or script you hand in.
+Everything about *how you get there* is otherwise unconstrained. Explore, plot, run a search if you want to. The constraints apply to what you submit, not to how you arrive at it, with the one exception that the work has to live in a notebook or script you hand in.
 
 ### Model size
 
@@ -299,7 +314,7 @@ Your finished `randomForestModel.joblib` is expected to come in **under 30 MB**,
 
 The reason a file can blow past that is worth understanding. One-hot encoding `proto` turns one column into 100+, and an unbounded tree keeps splitting until every leaf is pure, so each of your trees can end up with tens of thousands of nodes. Multiply by `n_estimators` and by two models in one file, and several hundred MB is easy to reach by accident.
 
-How you get under the limit is your decision, which part of the exercise. `max_depth` is the most direct lever, but `n_estimators`, `max_leaf_nodes`, `min_samples_leaf`, and `max_features` all change the size of the resulting artifact, and they change your metrics differently from one another. There are others to look at too! Experiment, watch both the file size and the eight metrics, and form a view about the trade-off. On this dataset, sensible caps cost very little accuracy. You won't get brownie points for getting a smaller file size, just get under the file size cap we list, and then simply work on getting the highest performance possible. 
+How you get under the limit is your decision, which part of the exercise. `max_depth` is the most direct lever, but `n_estimators`, `max_leaf_nodes`, `min_samples_leaf`, and `max_features` all change the size of the resulting artifact, and they change your metrics differently from one another. There are others to look at too! Experiment, watch both the file size and the eight metrics, and form a view about the trade-off. On this dataset, sensible caps cost very little accuracy. You won't get brownie points for getting a smaller file size, just get under the file size cap we list, and then simply work on getting the highest performance possible.
 
 ---
 
@@ -313,9 +328,9 @@ How you get under the limit is your decision, which part of the exercise. `max_d
 - **Artifact check**: it must load and be a `dict` with `binaryModel` and `multiclassModel`, each exposing a callable `.predict()`.
 - **Model type check**: the final estimator of each pipeline must be a `RandomForestClassifier`. A better-performing gradient booster still fails this check, because this assignment is specifically about random forests.
 
-On the Gradescope side, one more check runs **before** your score is fetched:
+On the Gradescope side, one more check runs before your score is fetched:
 
-- **Training file check**: your submission must contain a file named exactly `<netid>_rf.ipynb` or `<netid>_rf.py`, and it must have real content (a notebook with at least one cell, or a script with at least one line of code). Its *contents* are never inspected or graded. This check runs first, so a perfect model still reports **0** if the file is missing or misnamed — the fix is to re-upload with the right filename, not to retrain anything.
+- **Training file check**: your submission must contain a file named exactly `<netid>_rf.ipynb` or `<netid>_rf.py`, and it must have real content (a notebook with at least one cell, or a script with at least one line of code). Its *contents* are never inspected or graded. Check the filename against your netid before you upload. If you get it wrong, the fix is a rename and a re-upload of the same token, never a retrain, and it does not cost you a portal attempt.
 
 ### Step 2: Metrics
 
@@ -342,7 +357,7 @@ pointsEarned(metric) = ([yourMetricValue / 100] + score adjuster) x maxPointsFor
 | Multi-class F1 (macro) | 15 |
 | **Base Grade Total** | **100** |
 
-No minimum threshold to pass a metric. The score adjuster is something we have set to ensure you are able to still hit 100 on the assignment with good performance. We know a perfect score is highly unlikely, so there is an adjustment in place for each score. Once you run it on gradescope, you'll see how it maps. Please note, it is a relatively insignificant score adjustment, as Random Forest (ML) can perform **very well** on this type of data for MOST of the attack types. 
+No minimum threshold to pass a metric. The score adjuster is something we have set to ensure you are able to still hit 100 on the assignment with good performance. We know a perfect score is highly unlikely, so there is an adjustment in place for each score. Once you run it on gradescope, you'll see how it maps. Please note, it is a relatively insignificant score adjustment, as Random Forest (ML) can perform **very well** on this type of data for MOST of the attack types.
 
 **Rough orientation, so you know whether something is broken or merely unpolished.** Binary metrics should land high; if any of them is below the mid-80s, suspect a structural problem with your pipeline rather than your hyperparameters. Multi-class accuracy will be noticeably lower, which is expected: ten-way discrimination is a harder problem than two-way. Multi-class macro F1 will be lower still, and closing that gap is the interesting part of the assignment. If your macro F1 sits far below your multi-class accuracy, go count how many classes have a poor recall or even 0.00.
 
@@ -364,7 +379,7 @@ Extra credit on top of your base grade, uncapped by the 100-point ceiling. A per
 | 1 | +0.5 |
 | 0 (on the due date) | +0.0 |
 
-Each submission before the deadline banks a fresh tier, so getting a working artifact in early beats saving your attempts for the last minute. Balance that against the submission limit: submit early, but submit deliberately.
+Each submission before the deadline banks a fresh tier, so getting a working artifact in early beats saving your attempts for the last minute.
 
 ---
 
@@ -373,12 +388,15 @@ Each submission before the deadline banks a fresh tier, so getting a working art
 **These score 0:**
 
 - Uploading a `.py`, a notebook, a zip, or a folder to the portal instead of the single `.joblib`.
-- Forgetting your `<netid>_rf.ipynb` / `<netid>_rf.py` on Gradescope, or naming it something else (`Untitled.ipynb`, `assignment2.py`, `rf.ipynb`, `<netid>rf.py`). The training file is not graded, but leaving it out is.
 - Submitting a bare `RandomForestClassifier` instead of a pipeline, or one-hot encoding outside the pipeline. Same underlying error, and the most common failure on this assignment.
 - Wrong or misspelled dictionary keys.
 - Any estimator other than `RandomForestClassifier` as the final step.
 - Using `label` or `attack_cat` as an input feature.
 - A file over 30 MB.
+
+**This one just costs you a re-upload:**
+
+- Forgetting your `<netid>_rf.ipynb` / `<netid>_rf.py` on Gradescope, or naming it something else (`Untitled.ipynb`, `assignment2.py`, `rf.ipynb`, `<netid>rf.py`). Gradescope will reject the submission, but your token is still valid and your portal attempt is not consumed. Rename and upload again.
 
 **These quietly cost you points instead:**
 
@@ -426,45 +444,49 @@ See here: [`feature_importances_`](https://scikit-learn.org/stable/auto_examples
 1. Load your CSV. Run `value_counts()` on `attack_cat` and look hard at what you are up against.
 2. Build the encoder, the classifier, and the pipeline that holds them. Fit both models with modest starting parameters.
 3. Split, evaluate, and print all 8 metrics plus the `classification_report`. Write the numbers down. Make any obvious fixes you spot.
-4. Save, verify with the reload snippet, and **submit once early**, even if the model is barely tuned. A working artifact on the board is worth a great deal: it confirms your pipeline survives the autograder and banks you a bonus tier.
+4. Save, verify with the reload snippet, and **submit once early**, even if the model is barely tuned. This is not a hedge, it is the point of having attempts. Your local checks tell you the model works in *your* environment; only a real submission tells you it survives one you do not control. It also banks you a bonus tier.
 5. Do the real work locally. Attack the multi-class metrics, find the classes with zero (or poor) recall, and change one parameter at a time so you can attribute each result. Test against data from outside your training file.
 6. Refit your best configuration on your whole data set (if you can), save, verify, and submit again. Keep an eye on how many attempts you have left.
 7. Rename your working notebook or script to `<netid>_rf.ipynb` / `<netid>_rf.py` and upload it to Gradescope with your `token.txt`.
 
 ---
 
-## Where This Goes Next
-
-You now have two sets of metrics on the same problem: rules you wrote, and a model that wrote its own. Both halves of the comparison matter. The gain is real, and it came from capacity rather than magic. The residual error is also real, and it sits in the same overlapping region of feature space where your rules failed, for the same reason.
-
-What is new this assignment: a model can be accurate and useless at once, and which metric gets reported decides whether anyone notices. The gap between multi-class accuracy and macro F1 is the substance of a great many unreliable security ML claims. You have now produced that gap yourself, deliberately, and had to close it. Keep that in mind!
-
----
-
 ## Submission
 
-Submitting takes **two steps, in two different places**. Do both — step 1 produces your score, step 2 is what delivers it to Gradescope.
+Submitting takes **two steps, in two different places**. Do both: step 1 produces your score, step 2 is what delivers it to Gradescope.
 
-### Step 1 — Upload your model to the course portal
+**The short version:**
+
+- **Portal** gets `randomForestModel.joblib` and nothing else. This is where your attempts are counted.
+- **Gradescope** gets `token.txt` plus `<netid>_rf.ipynb` or `<netid>_rf.py`.
+- The training file is never read or graded, but it is always checked.
+
+### How attempts are counted
+
+Each portal submission mints one token, and the portal enforces your limit by capping how many tokens it will issue. Your remaining attempts are displayed on the portal and on Gradescope.
+
+This means **a rejected Gradescope upload costs you nothing**. If you forget the training file or misname it, fix it and upload again with the same token. You have not lost an attempt. The scarce resource is running your model against real data on the portal, not the paperwork afterwards.
+
+### Step 1: Upload your model to the course portal
 
 Upload **`randomForestModel.joblib`**, produced by `joblib.dump(...)`. The file itself: not a zip, not a notebook, not your training script.
 
-The portal runs the checks and computes your metrics, then shows a **`token.txt`** on your submission's results page. Download it.
+The portal runs the checks and computes your metrics, then **displays a token** on your submission's results page, tied to that specific submission. There is no file to download. Copy the token value and paste it into a plain text file named **`token.txt`**, containing the token and nothing else.
 
-### Step 2 — Upload to Gradescope
+### Step 2: Upload to Gradescope
 
 Upload **both** of these files together:
 
 | File | What it is | Graded? |
 |---|---|---|
 | `token.txt` | The token from your portal results page. This is what carries your score across. | This *is* your score |
-| `<netid>_rf.ipynb` **or** `<netid>_rf.py` | The notebook or script you trained your random forest in. | **No** — but required |
+| `<netid>_rf.ipynb` **or** `<netid>_rf.py` | The notebook or script you trained your random forest in. | **No**, but required |
 
-Miss either one and the submission is rejected with a **0** and an explanation.
+Miss either one and the submission is rejected with an explanation. Fix it and upload again with the same token.
 
 ### Naming your training file
 
-Your training file must be named **`<netid>_rf.ipynb`** or **`<netid>_rf.py`**, where `<netid>` is your own NYU netid — the part of your NYU email address *before* the `@`.
+Your training file must be named **`<netid>_rf.ipynb`** or **`<netid>_rf.py`**, where `<netid>` is your own NYU netid, the part of your NYU email address *before* the `@`.
 
 Both formats are accepted and neither is preferred. Submit a notebook if you worked in Jupyter, a script if you worked in a plain `.py` file. **One is enough**; you do not need both.
 
@@ -474,17 +496,21 @@ Both formats are accepted and neither is preferred. Submit a notebook if you wor
 | `jd42@nyu.edu` | `jd42_rf.ipynb` or `jd42_rf.py` |
 | `xy9876@nyu.edu` | `xy9876_rf.ipynb` or `xy9876_rf.py` |
 
-The autograder works out the expected filename from **your own Gradescope account**, so the name is unique to you and there is no list to look up — just use your netid. A classmate's file will not pass under their name, and yours will not pass under theirs.
+The autograder works out the expected filename from **your own Gradescope account**, so the name is unique to you and there is no list to look up. Just use your netid. A classmate's file will not pass under their name, and yours will not pass under theirs.
 
 What is enforced, precisely:
 
-- The filename must match `<netid>_rf.ipynb` or `<netid>_rf.py`. Capitalisation is forgiven (`ABC1234_RF.ipynb` is accepted), nothing else is — no spaces, no `-rf`, no `_RF_final(2)`.
+- The filename must match `<netid>_rf.ipynb` or `<netid>_rf.py`. Capitalisation is forgiven (`ABC1234_RF.ipynb` is accepted), nothing else is. No spaces, no `-rf`, no `_RF_final(2)`.
 - The file must have real content. A notebook needs valid `.ipynb` JSON with at least one cell; a script needs at least one line that is not blank and not a comment. An empty placeholder will not pass.
 - It may sit inside a folder in your upload; the autograder will find it.
-- If you happen to upload both a `.ipynb` and a `.py`, that is fine — the notebook is the one that gets checked.
+- If you happen to upload both a `.ipynb` and a `.py`, that is fine. The notebook is the one that gets checked.
 
-What is **not** enforced: anything about the contents. Nobody's score depends on what is in the file, and it is never imported, run, re-executed, or checked against your artifact. Submit the notebook or script you actually worked in — exploration, dead ends, plots and all. It is there so your process is on record, not to be marked.
+What is **not** enforced: anything about the contents. Nobody's score depends on what is in the file, and it is never imported, run, re-executed, or checked against your artifact. Submit the notebook or script you actually worked in, exploration, dead ends, plots and all. It is there so your process is on record, not to be marked.
 
-> **Note the order of operations.** The training file is checked *before* your score is retrieved. A flawless model with a misnamed file reports 0 — and the fix is a rename and a re-upload, not a retrain. Check the filename before you submit.
+---
 
-Autograder results are returned within Gradescope. **Your number of submissions is limited**, and the output tells you how many you have used; read it carefully. Each submission before the deadline banks a fresh early-submission bonus tier, so submit early, but do your experimenting locally rather than against the autograder.
+## Where This Goes Next
+
+You now have two sets of metrics on the same problem: rules you wrote, and a model that wrote its own. Both halves of the comparison matter. The gain is real, and it came from capacity rather than magic. The residual error is also real, and it sits in the same overlapping region of feature space where your rules failed, for the same reason.
+
+What is new this assignment: a model can be accurate and useless at once, and which metric gets reported decides whether anyone notices. The gap between multi-class accuracy and macro F1 is the substance of a great many unreliable security ML claims. You have now produced that gap yourself, deliberately, and had to close it. Keep that in mind!
